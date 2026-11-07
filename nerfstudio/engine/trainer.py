@@ -26,21 +26,25 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from pathlib import Path
 from threading import Lock
-from typing import DefaultDict, Dict, List, Literal, Optional, Tuple, Type, cast
+from typing import (DefaultDict, Dict, List, Literal, Optional, Tuple, Type,
+                    cast)
 
 import torch
 import viser
 from rich import box, style
 from rich.panel import Panel
 from rich.table import Table
-from torch.cuda.amp.grad_scaler import GradScaler
+from torch.amp.grad_scaler import GradScaler
 
 from nerfstudio.configs.experiment_config import ExperimentConfig
-from nerfstudio.engine.callbacks import TrainingCallback, TrainingCallbackAttributes, TrainingCallbackLocation
+from nerfstudio.engine.callbacks import (TrainingCallback,
+                                         TrainingCallbackAttributes,
+                                         TrainingCallbackLocation)
 from nerfstudio.engine.optimizers import Optimizers
 from nerfstudio.pipelines.base_pipeline import VanillaPipeline
 from nerfstudio.utils import profiler, writer
-from nerfstudio.utils.decorators import check_eval_enabled, check_main_thread, check_viewer_enabled
+from nerfstudio.utils.decorators import (check_eval_enabled, check_main_thread,
+                                         check_viewer_enabled)
 from nerfstudio.utils.misc import step_check
 from nerfstudio.utils.rich_utils import CONSOLE
 from nerfstudio.utils.writer import EventName, TimeWriter
@@ -134,7 +138,7 @@ class Trainer:
             CONSOLE.print("Mixed precision is disabled for CPU training.")
         self._start_step: int = 0
         # optimizers
-        self.grad_scaler = GradScaler(enabled=self.use_grad_scaler)
+        self.grad_scaler = GradScaler("cuda", enabled=self.use_grad_scaler)
 
         self.base_dir: Path = config.get_base_dir()
         # directory to save checkpoints
@@ -429,7 +433,7 @@ class Trainer:
                 load_step = sorted(int(x[x.find("-") + 1 : x.find(".")]) for x in os.listdir(load_dir))[-1]
             load_path: Path = load_dir / f"step-{load_step:09d}.ckpt"
             assert load_path.exists(), f"Checkpoint {load_path} does not exist"
-            loaded_state = torch.load(load_path, map_location="cpu")
+            loaded_state = torch.load(load_path, map_location="cpu", weights_only=False)
             self._start_step = loaded_state["step"] + 1
             # load the checkpoints for pipeline, optimizers, and gradient scalar
             self.pipeline.load_pipeline(loaded_state["pipeline"], loaded_state["step"])
@@ -440,7 +444,7 @@ class Trainer:
             CONSOLE.print(f"Done loading Nerfstudio checkpoint from {load_path}")
         elif load_checkpoint is not None:
             assert load_checkpoint.exists(), f"Checkpoint {load_checkpoint} does not exist"
-            loaded_state = torch.load(load_checkpoint, map_location="cpu")
+            loaded_state = torch.load(load_checkpoint, map_location="cpu", weights_only=False)
             self._start_step = loaded_state["step"] + 1
             # load the checkpoints for pipeline, optimizers, and gradient scalar
             self.pipeline.load_pipeline(loaded_state["pipeline"], loaded_state["step"])

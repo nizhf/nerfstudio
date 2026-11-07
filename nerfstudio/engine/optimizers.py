@@ -22,7 +22,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Type
 
 import torch
-from torch.cuda.amp.grad_scaler import GradScaler
+from torch.amp.grad_scaler import GradScaler
 from torch.nn.parameter import Parameter
 
 from nerfstudio.configs import base_config
@@ -87,7 +87,8 @@ class Optimizers:
         for param_group_name, params in param_groups.items():
             # For deprecation, catch the camera_opt param group and fix it nicely
             if param_group_name == "camera_opt" and "camera_opt" not in config:
-                from nerfstudio.engine.schedulers import ExponentialDecaySchedulerConfig
+                from nerfstudio.engine.schedulers import \
+                    ExponentialDecaySchedulerConfig
                 from nerfstudio.utils.rich_utils import CONSOLE
 
                 CONSOLE.print(

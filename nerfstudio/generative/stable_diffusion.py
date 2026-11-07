@@ -26,7 +26,7 @@ import torch.nn.functional as F
 import tyro
 from jaxtyping import Float
 from torch import Tensor, nn
-from torch.cuda.amp.grad_scaler import GradScaler
+from torch.amp.grad_scaler import GradScaler
 
 from nerfstudio.utils.rich_utils import CONSOLE
 
@@ -50,7 +50,8 @@ class StableDiffusion(nn.Module):
         super().__init__()
 
         try:
-            from diffusers import DiffusionPipeline, PNDMScheduler, StableDiffusionPipeline
+            from diffusers import (DiffusionPipeline, PNDMScheduler,
+                                   StableDiffusionPipeline)
 
         except ImportError:
             CONSOLE.print("[bold red]Missing Stable Diffusion packages.")

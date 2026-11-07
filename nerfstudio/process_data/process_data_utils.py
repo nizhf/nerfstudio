@@ -195,8 +195,6 @@ def convert_video_to_images(
             + ";".join(downscale_chains)
         )
 
-        ffmpeg_cmd += " -vsync vfr"
-
         # Evenly distribute frame selection if random seed does not exist
         spacing = num_frames // num_frames_target
         if random_seed:
@@ -209,11 +207,10 @@ def convert_video_to_images(
             select_cmd = f"thumbnail={spacing},setpts=N/TB,"
         else:
             CONSOLE.print("[bold red]Can't satisfy requested number of frames. Extracting all frames.")
-            ffmpeg_cmd += " -pix_fmt bgr8"
             select_cmd = ""
 
         downscale_cmd = f' -filter_complex "{select_cmd}{crop_cmd}{downscale_chain}"' + "".join(
-            [f' -map "[out{i}]" "{downscale_paths[i]}"' for i in range(num_downscales + 1)]
+            [f' -map "[out{i}]" -fps_mode vfr -pix_fmt rgb24 "{downscale_paths[i]}"' for i in range(num_downscales + 1)]
         )
 
         ffmpeg_cmd += downscale_cmd
